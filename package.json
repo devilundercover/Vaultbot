@@ -1,0 +1,14 @@
+{
+  "name": "discord-shop-bot",
+  "version": "1.0.0",
+  "description": "Minecraft Schematics Shop Bot mit discord.js v14",
+  "main": "index.js",
+  "scripts": {
+    "start":  "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.0",
+    "dotenv":     "^16.4.5"
+  }
+}

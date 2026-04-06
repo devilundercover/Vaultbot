@@ -156,7 +156,7 @@ module.exports = {
           content:    `<@&${config.adminRoleId}> <@&${config.modRoleId}> — Neues Ticket von ${user}!`,
           embeds:     [adminEmbed],
           components: [new ActionRowBuilder().addComponents(linkBtn)],
-        });
+        }).catch((e) => console.error('Admin-Ticket Benachrichtigung fehlgeschlagen:', e));
       }
 
       await interaction.editReply({

@@ -15,7 +15,6 @@ function safeChannelName(username) {
   return `ticket-${username.toLowerCase().replace(/[^a-z0-9-_]/g, '').slice(0, 80)}`;
 }
 
-// Prüft ob ein Member Admin ODER Mod ist
 function isStaff(member) {
   return (
     member.roles.cache.has(config.adminRoleId) ||
@@ -43,14 +42,31 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
 
+    let channel;
+
     try {
-      const channel = await guild.channels.create({
+      channel = await guild.channels.create({
         name:   expectedName,
         type:   ChannelType.GuildText,
         parent: config.ticketCategoryId || null,
         topic:  `Ticket von ${user.tag} | User-ID: ${user.id}`,
         permissionOverwrites: [
+          // Niemand sieht den Channel
           { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
+          // Bot selbst — WICHTIG damit er Nachrichten senden kann
+          {
+            id:    guild.members.me.id,
+            allow: [
+              PermissionFlagsBits.ViewChannel,
+              PermissionFlagsBits.SendMessages,
+              PermissionFlagsBits.ReadMessageHistory,
+              PermissionFlagsBits.ManageChannels,
+              PermissionFlagsBits.ManageMessages,
+              PermissionFlagsBits.AttachFiles,
+              PermissionFlagsBits.EmbedLinks,
+            ],
+          },
+          // Ticket-Ersteller
           {
             id:    user.id,
             allow: [
@@ -132,9 +148,26 @@ module.exports = {
         ],
       });
 
-      // ── Benachrichtigung in #admin-tickets ────────
-      const adminTicketChannel = guild.channels.cache.get(config.adminTicketChannelId);
-      if (adminTicketChannel) {
+      await interaction.editReply({
+        content: `✅ Dein Ticket wurde erstellt: ${channel}\nEin Admin oder Mod wird sich bald bei dir melden!`,
+      });
+
+    } catch (error) {
+      console.error('❌ Fehler beim Erstellen des Tickets:', error);
+      await interaction.editReply({
+        content:
+          '❌ **Fehler beim Erstellen des Tickets!**\n' +
+          '• Bot hat keine `Channels verwalten` Berechtigung?\n' +
+          '• Kategorie-ID falsch?\n' +
+          '• Rollen-IDs falsch?',
+      });
+      return;
+    }
+
+    // ── Admin-Benachrichtigung (separat, zeigt nie Fehler dem User) ──
+    try {
+      const adminCh = guild.channels.cache.get(config.adminTicketChannelId);
+      if (adminCh && channel) {
         const adminEmbed = new EmbedBuilder()
           .setTitle('🎫 Neues Ticket geöffnet!')
           .setDescription(
@@ -152,26 +185,14 @@ module.exports = {
           .setStyle(ButtonStyle.Link)
           .setURL(`https://discord.com/channels/${guild.id}/${channel.id}`);
 
-        await adminTicketChannel.send({
+        await adminCh.send({
           content:    `<@&${config.adminRoleId}> <@&${config.modRoleId}> — Neues Ticket von ${user}!`,
           embeds:     [adminEmbed],
           components: [new ActionRowBuilder().addComponents(linkBtn)],
-        }).catch((e) => console.error('Admin-Ticket Benachrichtigung fehlgeschlagen:', e));
+        });
       }
-
-      await interaction.editReply({
-        content: `✅ Dein Ticket wurde erstellt: ${channel}\nEin Admin oder Mod wird sich bald bei dir melden!`,
-      });
-
-    } catch (error) {
-      console.error('❌ Fehler beim Erstellen des Tickets:', error);
-      await interaction.editReply({
-        content:
-          '❌ **Fehler beim Erstellen des Tickets!**\n' +
-          '• Bot hat keine `Channels verwalten` Berechtigung?\n' +
-          '• Kategorie-ID in .env falsch?\n' +
-          '• Rollen-IDs falsch?',
-      });
+    } catch (e) {
+      console.error('Admin-Ticket Benachrichtigung fehlgeschlagen:', e);
     }
   },
 
@@ -210,7 +231,7 @@ module.exports = {
             .setColor(0xFF5555)
             .setTimestamp(),
         ],
-      });
+      }).catch(() => {});
     }
 
     setTimeout(() => {

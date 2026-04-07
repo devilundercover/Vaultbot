@@ -39,6 +39,9 @@ module.exports = {
       if (interaction.customId === 'shop_minecraft_name_modal') {
         return shopPurchaseHandler.handleMinecraftNameModal(interaction);
       }
+      if (interaction.customId === 'ticket_open_modal') {
+        return ticketHandler.handleTicketModal(interaction);
+      }
     }
 
     // ── Buttons ──────────────────────────────────

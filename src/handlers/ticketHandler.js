@@ -6,6 +6,9 @@ const {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } = require('discord.js');
 const config = require('../../config');
 
@@ -26,6 +29,7 @@ module.exports = {
   ticketSelections,
   isStaff,
 
+  // ── Schritt 1: Modal anzeigen ────────────────
   async openTicket(interaction) {
     const { guild, user } = interaction;
 
@@ -40,20 +44,43 @@ module.exports = {
       });
     }
 
+    // Modal anzeigen
+    const modal = new ModalBuilder()
+      .setCustomId('ticket_open_modal')
+      .setTitle('🎫 Ticket öffnen');
+
+    const problemInput = new TextInputBuilder()
+      .setCustomId('ticket_problem')
+      .setLabel('Beschreibe kurz dein Anliegen')
+      .setStyle(TextInputStyle.Paragraph)
+      .setPlaceholder('z.B. Ich möchte die Bamboo Farm kaufen / Ich habe ein Problem mit...')
+      .setRequired(true)
+      .setMinLength(10)
+      .setMaxLength(500);
+
+    modal.addComponents(new ActionRowBuilder().addComponents(problemInput));
+    await interaction.showModal(modal);
+  },
+
+  // ── Schritt 2: Modal abgeschickt → Ticket erstellen ──
+  async handleTicketModal(interaction) {
+    const { guild, user } = interaction;
+    const problem = interaction.fields.getTextInputValue('ticket_problem');
+
     await interaction.deferReply({ ephemeral: true });
 
     let channel;
 
     try {
+      const expectedName = safeChannelName(user.username);
+
       channel = await guild.channels.create({
         name:   expectedName,
         type:   ChannelType.GuildText,
         parent: config.ticketCategoryId || null,
         topic:  `Ticket von ${user.tag} | User-ID: ${user.id}`,
         permissionOverwrites: [
-          // Niemand sieht den Channel
           { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
-          // Bot selbst — WICHTIG damit er Nachrichten senden kann
           {
             id:    guild.members.me.id,
             allow: [
@@ -66,7 +93,6 @@ module.exports = {
               PermissionFlagsBits.EmbedLinks,
             ],
           },
-          // Ticket-Ersteller
           {
             id:    user.id,
             allow: [
@@ -76,7 +102,6 @@ module.exports = {
               PermissionFlagsBits.AttachFiles,
             ],
           },
-          // Admin Rolle
           {
             id:    config.adminRoleId,
             allow: [
@@ -88,7 +113,6 @@ module.exports = {
               PermissionFlagsBits.AttachFiles,
             ],
           },
-          // Mod Rolle
           {
             id:    config.modRoleId,
             allow: [
@@ -124,8 +148,17 @@ module.exports = {
         .map((s) => `${s.emoji} **${s.label}** — \`${s.priceFormatted}\``)
         .join('\n');
 
-      const embed = new EmbedBuilder()
-        .setTitle('🎫 Dein Support-Ticket')
+      // ── Problem-Embed ganz oben ───────────────
+      const problemEmbed = new EmbedBuilder()
+        .setTitle('📋 Anliegen des Users')
+        .setDescription(`${user} schreibt:\n\n> ${problem}`)
+        .setColor(0xF0A500)
+        .setFooter({ text: `Ticket von ${user.tag}` })
+        .setTimestamp();
+
+      // ── Willkommens-Embed ─────────────────────
+      const welcomeEmbed = new EmbedBuilder()
+        .setTitle('🎫 Support-Ticket')
         .setDescription(
           `Hallo ${user}! 👋\n\n` +
           '**So läuft dein Kauf ab:**\n' +
@@ -136,12 +169,11 @@ module.exports = {
         )
         .addFields({ name: '💰 Aktuelle Preisliste', value: priceList })
         .setColor(0x2ECC71)
-        .setFooter({ text: `Ticket von ${user.tag}` })
         .setTimestamp();
 
       await channel.send({
         content:    `${user}`,
-        embeds:     [embed],
+        embeds:     [problemEmbed, welcomeEmbed],
         components: [
           new ActionRowBuilder().addComponents(selectMenu),
           new ActionRowBuilder().addComponents(closeBtn),
@@ -164,7 +196,7 @@ module.exports = {
       return;
     }
 
-    // ── Admin-Benachrichtigung (separat, zeigt nie Fehler dem User) ──
+    // ── Admin-Benachrichtigung ────────────────────
     try {
       const adminCh = guild.channels.cache.get(config.adminTicketChannelId);
       if (adminCh && channel) {
@@ -174,6 +206,7 @@ module.exports = {
             `**${user.tag}** hat ein neues Ticket geöffnet!\n\n` +
             `👤 **User:** ${user} (${user.tag})\n` +
             `📋 **Channel:** ${channel}\n` +
+            `💬 **Anliegen:** ${problem}\n` +
             `🕐 **Zeitpunkt:** <t:${Math.floor(Date.now() / 1000)}:F>`
           )
           .setThumbnail(user.displayAvatarURL())
@@ -196,6 +229,7 @@ module.exports = {
     }
   },
 
+  // ── Ticket schließen ─────────────────────────
   async closeTicket(interaction) {
     const { member, channel, user, guild } = interaction;
 
@@ -218,22 +252,7 @@ module.exports = {
 
     await interaction.reply({ embeds: [embed] });
 
-    const logChannel = guild.channels.cache.get(config.logChannelId);
-    if (logChannel) {
-      await logChannel.send({
-        embeds: [
-          new EmbedBuilder()
-            .setTitle('🔒 Ticket geschlossen')
-            .addFields(
-              { name: '📋 Channel',        value: `#${channel.name}`, inline: true },
-              { name: '👤 Geschlossen von', value: `${user}`,          inline: true },
-            )
-            .setColor(0xFF5555)
-            .setTimestamp(),
-        ],
-      }).catch(() => {});
-    }
-
+    // Ticket schließen wird NICHT mehr in logs gepostet
     setTimeout(() => {
       channel.delete(`Ticket geschlossen von ${user.tag}`).catch(console.error);
     }, 5000);

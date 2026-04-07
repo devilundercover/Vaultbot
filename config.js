@@ -54,12 +54,12 @@ const SCHEMATICS_LIST = [
   },
   {
     key:         'bonemeal_gross',
-    label:       'Bonemeal Farm (Groß)',
-    emoji:       '🦴',
+    label:       'Bamboo Generator',
+    emoji:       '🎋',
     price:       1_500_000,
-    description: 'Große Hochleistungs-Knochenmehlfarm',
+    description: 'Bonemeal rein → Bamboo raus, vollautomatisch',
     roleEnvVar:  'BONEMEAL_GROSS_ROLE_ID',
-  },
+  },  
   {
     key:         'resin_farm',
     label:       'Resin Farm',

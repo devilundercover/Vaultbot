@@ -54,12 +54,12 @@ const SCHEMATICS_LIST = [
   },
   {
     key:         'bonemeal_gross',
-    label:       'Bamboo Generator',
-    emoji:       '🎋',
+    label:       'Bonemeal Farm (Groß)',
+    emoji:       '🦴',
     price:       1_500_000,
-    description: 'Bonemeal rein → Bamboo raus, vollautomatisch',
+    description: 'Große Hochleistungs-Knochenmehlfarm',
     roleEnvVar:  'BONEMEAL_GROSS_ROLE_ID',
-  },  
+  },
   {
     key:         'resin_farm',
     label:       'Resin Farm',
@@ -168,6 +168,7 @@ module.exports = {
   logChannelId:          process.env.LOG_CHANNEL_ID,
   ticketCategoryId:      process.env.TICKET_CATEGORY_ID,
   adminTicketChannelId:  process.env.ADMIN_TICKET_CHANNEL_ID,
+  feedbackChannelId:     '1491228984678289488',
 
   schematics:    SCHEMATICS,
   getSchematic,

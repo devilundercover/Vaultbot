@@ -252,6 +252,24 @@ module.exports = {
 
     await interaction.reply({ embeds: [embed] });
 
+    // Feedback anfragen — nur an den Ticket-Ersteller (nicht den Admin der schließt)
+    const ticketOwnerName = channel.name.replace(/^ticket-/, '');
+    const feedbackHandler = require('./feedbackHandler');
+    setTimeout(async () => {
+      try {
+        await interaction.guild.members.fetch();
+        const ticketOwner = interaction.guild.members.cache.find(
+          (m) => m.user.username.toLowerCase().replace(/[^a-z0-9-_]/g, '').slice(0, 80) === ticketOwnerName
+        );
+        // Nur Feedback anfragen wenn der Ticket-Ersteller jemand anderes als der Schließende ist
+        if (ticketOwner && ticketOwner.id !== user.id) {
+          feedbackHandler.sendFeedbackRequest(ticketOwner.user, null, 'ticket');
+        }
+      } catch (e) {
+        console.error('Feedback nach Ticket-Schließung fehlgeschlagen:', e);
+      }
+    }, 2000);
+
     // Ticket schließen wird NICHT mehr in logs gepostet
     setTimeout(() => {
       channel.delete(`Ticket geschlossen von ${user.tag}`).catch(console.error);

@@ -337,12 +337,11 @@ module.exports = {
 
       pendingPurchases.delete(userId);
 
-    } catch (error) {
-      console.error('❌ Fehler bei Admin-Bestätigung:', error);
-    }
-  },
-
-  // ── Admin lehnt Zahlung ab ───────────────────
+      // Feedback anfragen (3 Sekunden nach Bestätigung)
+      const feedbackHandler = require('./feedbackHandler');
+      setTimeout(() => {
+        feedbackHandler.sendFeedbackRequest(member.user, schematic.label, 'purchase');
+      }, 3000);
   async handleAdminDeny(interaction, userId) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({

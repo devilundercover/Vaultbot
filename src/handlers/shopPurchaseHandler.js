@@ -342,6 +342,13 @@ module.exports = {
       setTimeout(() => {
         feedbackHandler.sendFeedbackRequest(member.user, schematic.label, 'purchase');
       }, 3000);
+
+    } catch (error) {
+      console.error('❌ Fehler beim Bestätigen:', error);
+    }
+  },
+
+  // ── Admin lehnt Zahlung ab ───────────────────
   async handleAdminDeny(interaction, userId) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({

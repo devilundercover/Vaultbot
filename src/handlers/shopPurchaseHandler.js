@@ -341,10 +341,11 @@ module.exports = {
       const feedbackHandler = require('./feedbackHandler');
       setTimeout(() => {
         feedbackHandler.sendFeedbackRequest(member.user, schematic.label, 'purchase');
-      }, 3000);
+     }, 3000);
+    } catch (error) {
+      console.error('Fehler in handleAdminConfirm:', error);
     }
   },
-
   async handleAdminDeny(interaction, userId) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({

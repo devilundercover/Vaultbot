@@ -248,8 +248,7 @@ module.exports = {
       const guild = client.guilds.cache.get(config.guildId);
       const feedbackChannel = guild?.channels.cache.get(config.feedbackChannelId);
 
-      if (feedbackChannel) {
-        const feedbackEmbed = new EmbedBuilder()
+      if (feedbackChannel) {        const feedbackEmbed = new EmbedBuilder()
           .setTitle(`📝 Neues Feedback${session.schematicLabel ? ` — ${session.schematicLabel}` : ''}`)
           .setDescription('*Anonym gepostet*')
           .addFields(

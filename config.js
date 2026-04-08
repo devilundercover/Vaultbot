@@ -52,12 +52,12 @@ const SCHEMATICS_LIST = [
     description: 'Kompakte Knochenmehlfarm',
     roleEnvVar:  'BONEMEAL_KLEIN_ROLE_ID',
   },
-   {
+  {
     key:         'bonemeal_gross',
-    label:       'Bamboo Generator',
-    emoji:       '🎋',
+    label:       'Bonemeal Farm (Groß)',
+    emoji:       '🦴',
     price:       1_500_000,
-    description: 'Bonemeal rein → Bamboo raus, vollautomatisch',
+    description: 'Große Hochleistungs-Knochenmehlfarm',
     roleEnvVar:  'BONEMEAL_GROSS_ROLE_ID',
   },
   {

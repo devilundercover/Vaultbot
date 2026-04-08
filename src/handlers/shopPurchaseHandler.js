@@ -342,6 +342,9 @@ module.exports = {
       setTimeout(() => {
         feedbackHandler.sendFeedbackRequest(member.user, schematic.label, 'purchase');
       }, 3000);
+    }
+  },
+
   async handleAdminDeny(interaction, userId) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({

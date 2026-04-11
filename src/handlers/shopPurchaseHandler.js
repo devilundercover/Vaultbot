@@ -342,6 +342,12 @@ module.exports = {
       setTimeout(() => {
         feedbackHandler.sendFeedbackRequest(member.user, schematic.label, 'purchase');
       }, 3000);
+
+    } catch (error) {
+      console.error('❌ Fehler bei Admin-Bestätigung:', error);
+    }
+  },
+
   async handleAdminDeny(interaction, userId) {
     if (!isStaff(interaction.member)) {
       return interaction.reply({

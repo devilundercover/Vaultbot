@@ -70,10 +70,10 @@ const SCHEMATICS_LIST = [
   },
   {
     key:         'sculk_farm',
-    label:       'Sculk Farm',
-    emoji:       '💀',
-    price:       1_000_000,
-    description: 'Vollautomatische Sculk-Farm',
+    label:       'Kaktus Farm',
+    emoji:       '🌵',
+    price:       2_000_000,
+    description: 'Vollautomatische Kaktusproduktion',
     roleEnvVar:  'SCULK_FARM_ROLE_ID',
   },
   {

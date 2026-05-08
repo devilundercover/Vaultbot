@@ -170,6 +170,10 @@ module.exports = {
   adminTicketChannelId:  process.env.ADMIN_TICKET_CHANNEL_ID,
   feedbackChannelId:     '1491228984678289488',
 
+  verifiedRoleId:       process.env.VERIFIED_ROLE_ID,
+  feedbackChannelId:    '1491228984678289488',
+  clanChannelId:        '1500863362270101594',
+
   schematics:    SCHEMATICS,
   getSchematic,
   formatPrice,

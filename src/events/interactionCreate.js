@@ -2,6 +2,41 @@ const ticketHandler       = require('../handlers/ticketHandler');
 const shopHandler         = require('../handlers/shopHandler');
 const shopPurchaseHandler = require('../handlers/shopPurchaseHandler');
 const feedbackHandler     = require('../handlers/feedbackHandler');
+const clanHandler         = require('../handlers/clanHandler');
+const config              = require('../../config');
+const { EmbedBuilder }    = require('discord.js');
+
+// ─────────────────────────────────────────────
+//  Verifizierung
+// ─────────────────────────────────────────────
+async function handleVerify(interaction) {
+  const { member, guild } = interaction;
+
+  if (member.roles.cache.has(config.verifiedRoleId)) {
+    return interaction.reply({ content: '✅ Du bist bereits verifiziert!', ephemeral: true });
+  }
+
+  try {
+    const role = guild.roles.cache.get(config.verifiedRoleId);
+    if (!role) {
+      return interaction.reply({ content: '❌ Verified-Rolle nicht gefunden! Kontaktiere einen Admin.', ephemeral: true });
+    }
+    await member.roles.add(role, 'Regeln akzeptiert');
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle('✅ Willkommen!')
+          .setDescription('Du hast die Regeln akzeptiert und bist jetzt **verifiziert**! 🎉\n\nDu hast jetzt Zugriff auf alle öffentlichen Channels.\nSchau dich um und besuche den **#shop** um Schematics zu kaufen! 🏗️')
+          .setColor(0x2ECC71)
+          .setTimestamp(),
+      ],
+      ephemeral: true,
+    });
+  } catch (error) {
+    console.error('Fehler bei Verifizierung:', error);
+    await interaction.reply({ content: '❌ Fehler! Bitte kontaktiere einen Admin.', ephemeral: true });
+  }
+}
 
 module.exports = {
   name: 'interactionCreate',
@@ -41,14 +76,22 @@ module.exports = {
 
       if (id === 'shop_minecraft_name_modal') return shopPurchaseHandler.handleMinecraftNameModal(interaction);
       if (id === 'ticket_open_modal')         return ticketHandler.handleTicketModal(interaction);
+      if (id === 'clan_modal_1')              return clanHandler.handleModal1(interaction);
+      if (id === 'clan_modal_2')              return clanHandler.handleModal2(interaction);
+      if (id === 'clan_modal_3')              return clanHandler.handleModal3(interaction);
+      if (id === 'clan_dates_modal')          return clanHandler.handleDatesSubmit(interaction, client);
 
-      if (id.startsWith('fb_q1_text_')) return feedbackHandler.handleQ1Text(interaction, id.replace('fb_q1_text_', ''));
-      if (id.startsWith('fb_q2_text_')) return feedbackHandler.handleQ2Text(interaction, id.replace('fb_q2_text_', ''));
+      if (id.startsWith('fb_q1_text_'))       return feedbackHandler.handleQ1Text(interaction, id.replace('fb_q1_text_', ''));
+      if (id.startsWith('fb_q2_text_'))       return feedbackHandler.handleQ2Text(interaction, id.replace('fb_q2_text_', ''));
+      if (id.startsWith('clan_deny_reason_')) return clanHandler.handleDenyReason(interaction, id.replace('clan_deny_reason_', ''), client);
     }
 
     // ── Buttons ──────────────────────────────────
     if (interaction.isButton()) {
       const id = interaction.customId;
+
+      // Verifizierung
+      if (id === 'verify_accept') return handleVerify(interaction);
 
       // Ticket-System
       if (id === 'open_ticket')           return ticketHandler.openTicket(interaction);
@@ -58,8 +101,7 @@ module.exports = {
       if (id === 'confirm_payment')       return shopHandler.confirmPayment(interaction);
 
       // Shop-Kauf-System
-      if (id === 'shop_buy') return shopPurchaseHandler.showShopDropdown(interaction);
-
+      if (id === 'shop_buy')              return shopPurchaseHandler.showShopDropdown(interaction);
       if (id.startsWith('shop_paid_'))    return shopPurchaseHandler.handlePaid(interaction, id.replace('shop_paid_', ''));
       if (id.startsWith('shop_cancel_'))  return shopPurchaseHandler.handleCancel(interaction, id.replace('shop_cancel_', ''));
       if (id.startsWith('shop_confirm_')) return shopPurchaseHandler.handleAdminConfirm(interaction, id.replace('shop_confirm_', ''), client);
@@ -72,21 +114,29 @@ module.exports = {
       if (id.startsWith('fb_q3_no_'))     return feedbackHandler.handleQ3(interaction, id.replace('fb_q3_no_', ''), 'no');
       if (id.startsWith('fb_submit_'))    return feedbackHandler.handleSubmit(interaction, id.replace('fb_submit_', ''), client);
       if (id.startsWith('fb_cancel_'))    return feedbackHandler.handleCancel(interaction, id.replace('fb_cancel_', ''));
-
-      // Feedback Sterne Q1
       if (id.startsWith('fb_q1_') && !id.includes('text')) {
-        const parts  = id.split('_');
-        const stars  = parseInt(parts[parts.length - 1]);
-        const userId = parts.slice(2, parts.length - 1).join('_');
+        const parts = id.split('_'); const stars = parseInt(parts[parts.length - 1]); const userId = parts.slice(2, parts.length - 1).join('_');
         return feedbackHandler.handleQ1Stars(interaction, userId, stars);
       }
-      // Feedback Sterne Q2
       if (id.startsWith('fb_q2_') && !id.includes('text')) {
-        const parts  = id.split('_');
-        const stars  = parseInt(parts[parts.length - 1]);
-        const userId = parts.slice(2, parts.length - 1).join('_');
+        const parts = id.split('_'); const stars = parseInt(parts[parts.length - 1]); const userId = parts.slice(2, parts.length - 1).join('_');
         return feedbackHandler.handleQ2Stars(interaction, userId, stars);
       }
+
+      // Clan-System
+      if (id === 'clan_apply')              return clanHandler.startApplication(interaction);
+      if (id === 'clan_bedrock')            return clanHandler.handleVersion(interaction, 'Bedrock');
+      if (id === 'clan_java')               return clanHandler.handleVersion(interaction, 'Java');
+      if (id === 'clan_mic_yes')            return clanHandler.handleMic(interaction, '✅ Ja');
+      if (id === 'clan_mic_no')             return clanHandler.handleMic(interaction, '❌ Nein');
+      if (id === 'clan_voice_yes')          return clanHandler.handleVoice(interaction, '✅ Ja');
+      if (id === 'clan_voice_no')           return clanHandler.handleVoice(interaction, '❌ Nein');
+      if (id === 'clan_submit')             return clanHandler.submitApplication(interaction, client);
+      if (id === 'clan_cancel')             return clanHandler.cancelApplication(interaction);
+      if (id.startsWith('clan_review_'))    return clanHandler.reviewApplication(interaction, id.replace('clan_review_', ''));
+      if (id.startsWith('clan_accept_'))    return clanHandler.acceptApplication(interaction, id.replace('clan_accept_', ''), client);
+      if (id.startsWith('clan_deny_'))      return clanHandler.denyApplication(interaction, id.replace('clan_deny_', ''));
+      if (id.startsWith('clan_dates_'))     return clanHandler.showDatesModal(interaction);
     }
 
     // ── Select Menus ─────────────────────────────

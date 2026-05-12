@@ -58,7 +58,7 @@ module.exports = {
         new TextInputBuilder().setCustomId('mc_name').setLabel('1. Dein Minecraft Ingame-Name').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(16)
       ),
       new ActionRowBuilder().addComponents(
-        new TextInputBuilder().setCustomId('banned').setLabel('2. Wurdest du schon mal auf HugoSMP gebannt?).setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(300).setPlaceholder('z.B. Ja/Nein, weil...)
+        new TextInputBuilder().setCustomId('banned').setLabel('2. Wurdest du schon mal auf HugoSMP gebannt?').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(300).setPlaceholder('z.B. Ja/Nein, weil...')
       ),
       new ActionRowBuilder().addComponents(
         new TextInputBuilder().setCustomId('age').setLabel('3. Wie alt bist du?').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(3)

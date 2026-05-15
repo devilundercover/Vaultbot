@@ -6,19 +6,23 @@ const {
   EmbedBuilder,
 } = require('discord.js');
 const config = require('../../config');
-
+ 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setupverify')
     .setDescription('Postet den Regelakzeptanz-Button (nur Admin)'),
-
+ 
   async execute(interaction) {
+    console.log('setupverify aufgerufen von:', interaction.user.tag);
+    console.log('Admin Role ID:', config.adminRoleId);
+    console.log('Hat Admin Rolle:', interaction.member.roles.cache.has(config.adminRoleId));
+ 
     await interaction.deferReply({ ephemeral: true });
-
+ 
     if (!interaction.member.roles.cache.has(config.adminRoleId)) {
       return interaction.editReply({ content: '❌ Nur Admins!' });
     }
-
+ 
     const embed = new EmbedBuilder()
       .setTitle('📜 Willkommen auf HugoSMP Schematics!')
       .setDescription(
@@ -33,12 +37,12 @@ module.exports = {
         '6. Zahle nur den angegebenen Preis\n' +
         '7. Gib deinen korrekten Minecraft-Namen an\n' +
         '8. Bei Problemen → Ticket öffnen\n\n' +
-        '**Wenn du alle Regeln gelesen und verstanden hast, klicke auf den Button unten!** ✅'
+        '**Wenn du alle Regeln gelesen hast, klicke auf den Button unten!** ✅'
       )
       .setColor(0x2ECC71)
       .setFooter({ text: 'HugoSMP Schematics • Regelakzeptanz' })
       .setTimestamp();
-
+ 
     await interaction.channel.send({
       embeds:     [embed],
       components: [
@@ -50,7 +54,8 @@ module.exports = {
         ),
       ],
     });
-
+ 
     await interaction.editReply({ content: '✅ Verify-Panel gepostet!' });
+    console.log('setupverify erfolgreich!');
   },
 };

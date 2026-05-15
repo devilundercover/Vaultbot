@@ -13,8 +13,10 @@ module.exports = {
     .setDescription('Postet den Regelakzeptanz-Button (nur Admin)'),
 
   async execute(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+
     if (!interaction.member.roles.cache.has(config.adminRoleId)) {
-      return interaction.reply({ content: '❌ Nur Admins!', ephemeral: true });
+      return interaction.editReply({ content: '❌ Nur Admins!' });
     }
 
     const embed = new EmbedBuilder()
@@ -37,7 +39,6 @@ module.exports = {
       .setFooter({ text: 'HugoSMP Schematics • Regelakzeptanz' })
       .setTimestamp();
 
-    await interaction.reply({ content: '✅ Verify-Panel gepostet!', ephemeral: true });
     await interaction.channel.send({
       embeds:     [embed],
       components: [
@@ -49,5 +50,7 @@ module.exports = {
         ),
       ],
     });
+
+    await interaction.editReply({ content: '✅ Verify-Panel gepostet!' });
   },
 };

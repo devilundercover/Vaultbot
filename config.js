@@ -110,13 +110,12 @@ const SCHEMATICS_LIST = [
   },
   {
     key:         'bee_farm',
-    label:       'Bee Farm',
-    emoji:       '🐝',
-    price:       1_500_000,
-    description: 'Vollautomatische Bienen- & Honigfarm',
+    label:       'Fungus Farm',
+    emoji:       '🍄',
+    price:       2_500_000,
+    description: 'OP Netherpilze Farm, vollautomatisch',
     roleEnvVar:  'BEE_FARM_ROLE_ID',
   },
-
   // ──────────────────────────────────────────
   //  ➕ NEUE SCHEMATIC HINZUFÜGEN – Einfach
   //  diesen Block kopieren, einfügen & anpassen:
